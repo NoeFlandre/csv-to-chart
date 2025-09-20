@@ -1,7 +1,13 @@
 [project]
 name = "csv-to-chart"
 version = "0.1.0"
-description = "Add your description here"
+description = "A web application that converts CSV data to charts using AI"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "Flask",
+    "pandas",
+    "openai",
+    "matplotlib",
+    "requests",
+]

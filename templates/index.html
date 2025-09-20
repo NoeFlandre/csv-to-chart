@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV-to-Chart</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>CSV-to-Chart</h1>
+        <p class="subtitle">Transform your CSV data into beautiful charts with AI</p>
+        
+        <div id="api-key-container" class="card">
+            <h2>Step 1: Enter Your API Key</h2>
+            <p>To use this application, you need a free API key from OpenRouter.</p>
+            <input type="password" id="api-key" placeholder="Enter your OpenRouter API Key">
+            <button id="save-api-key-button">Save API Key</button>
+            <p class="help-text"><small>Get your free API key at <a href="https://openrouter.ai/" target="_blank">openrouter.ai</a></small></p>
+        </div>
+        
+        <div id="upload-container" class="card" style="display: none;">
+            <h2>Step 2: Upload Your CSV File</h2>
+            <p>Upload a CSV file to analyze, or try our sample data.</p>
+            
+            <div class="sample-data-section">
+                <h3>Try with Sample Data</h3>
+                <p>Our sample CSV contains employee data with Name, Age, Salary, and Department.</p>
+                <button id="use-sample-button">Use Sample Data</button>
+            </div>
+            
+            <div class="upload-section">
+                <h3>Upload Your Own Data</h3>
+                <input type="file" id="csv-file" accept=".csv">
+                <button id="upload-button">Upload CSV</button>
+            </div>
+        </div>
+        
+        <div id="query-container" class="card" style="display: none;">
+            <h2>Step 3: Ask Questions About Your Data</h2>
+            <p>Type a question about your data to generate a chart.</p>
+            
+            <div class="examples-section">
+                <h3>Example Questions</h3>
+                <ul class="example-questions">
+                    <li>"Show me a bar chart of average salary by department"</li>
+                    <li>"Create a scatter plot of age vs salary"</li>
+                    <li>"What is the distribution of employees across departments?"</li>
+                    <li>"Show me the age distribution of employees"</li>
+                    <li>"Create a pie chart of salary ranges"</li>
+                </ul>
+                <p class="help-text">Click on any example to use it:</p>
+                <div class="example-buttons">
+                    <button class="example-btn" data-question="Show me a bar chart of average salary by department">Average Salary by Dept</button>
+                    <button class="example-btn" data-question="Create a scatter plot of age vs salary">Age vs Salary</button>
+                    <button class="example-btn" data-question="What is the distribution of employees across departments?">Dept Distribution</button>
+                </div>
+            </div>
+            
+            <div class="query-section">
+                <input type="text" id="question" placeholder="e.g., Show me a bar chart of average salary by department">
+                <button id="chart-button">Generate Chart</button>
+                <div id="query-loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Generating your chart... This may take a few moments.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="chart-container" class="card" style="display: none;">
+            <h2>Your Generated Chart</h2>
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Generating your chart... This may take a few moments.</p>
+            </div>
+            <img id="chart-img" src="" alt="Generated Chart" style="display: none;">
+            <button id="new-chart-button">Generate Another Chart</button>
+            <button id="new-data-button">Upload New Data</button>
+        </div>
+    </div>
+
+    <script>
+        const apiKeyContainer = document.getElementById('api-key-container');
+        const uploadContainer = document.getElementById('upload-container');
+        const queryContainer = document.getElementById('query-container');
+        const chartContainer = document.getElementById('chart-container');
+        const apiKeyInput = document.getElementById('api-key');
+        const saveApiKeyButton = document.getElementById('save-api-key-button');
+        const uploadButton = document.getElementById('upload-button');
+        const csvFileInput = document.getElementById('csv-file');
+        const useSampleButton = document.getElementById('use-sample-button');
+        const chartButton = document.getElementById('chart-button');
+        const questionInput = document.getElementById('question');
+        const chartImg = document.getElementById('chart-img');
+        const newChartButton = document.getElementById('new-chart-button');
+        const newDataButton = document.getElementById('new-data-button');
+        const exampleButtons = document.querySelectorAll('.example-btn');
+
+        let filepath = null;
+        let apiKey = null;
+
+        // Check if API key is already saved in localStorage
+        const savedApiKey = localStorage.getItem('openrouter_api_key');
+        if (savedApiKey) {
+            apiKey = savedApiKey;
+            apiKeyContainer.style.display = 'none';
+            uploadContainer.style.display = 'block';
+        }
+
+        // Event listeners for example questions
+        exampleButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                questionInput.value = button.getAttribute('data-question');
+            });
+        });
+
+        saveApiKeyButton.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (!key) {
+                alert('Please enter your API key.');
+                return;
+            }
+            apiKey = key;
+            localStorage.setItem('openrouter_api_key', apiKey);
+            apiKeyContainer.style.display = 'none';
+            uploadContainer.style.display = 'block';
+        });
+
+        useSampleButton.addEventListener('click', () => {
+            // Show loading on the button
+            useSampleButton.textContent = 'Preparing sample data...';
+            useSampleButton.disabled = true;
+            
+            // For demo purposes, we'll simulate using the sample file
+            fetch('/use-sample', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ api_key: apiKey })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                useSampleButton.textContent = 'Use Sample Data';
+                useSampleButton.disabled = false;
+                
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    filepath = data.filepath;
+                    uploadContainer.style.display = 'none';
+                    queryContainer.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                // Reset button
+                useSampleButton.textContent = 'Use Sample Data';
+                useSampleButton.disabled = false;
+                alert('An error occurred while preparing sample data.');
+            });
+        });
+
+        uploadButton.addEventListener('click', () => {
+            if (!csvFileInput.files[0]) {
+                alert('Please select a file to upload.');
+                return;
+            }
+            
+            // Show loading on the button
+            uploadButton.textContent = 'Uploading...';
+            uploadButton.disabled = true;
+            
+            const formData = new FormData();
+            formData.append('file', csvFileInput.files[0]);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                uploadButton.textContent = 'Upload CSV';
+                uploadButton.disabled = false;
+                
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    filepath = data.filepath;
+                    uploadContainer.style.display = 'none';
+                    queryContainer.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                // Reset button
+                uploadButton.textContent = 'Upload CSV';
+                uploadButton.disabled = false;
+                alert('An error occurred while uploading the file.');
+            });
+        });
+
+        chartButton.addEventListener('click', () => {
+            const question = questionInput.value;
+            if (!question) {
+                alert('Please enter a question.');
+                return;
+            }
+            
+            // Make sure we have an API key
+            if (!apiKey) {
+                // Check if it's in localStorage
+                const savedKey = localStorage.getItem('openrouter_api_key');
+                if (savedKey) {
+                    apiKey = savedKey;
+                } else {
+                    alert('Please enter your API key first.');
+                    apiKeyContainer.style.display = 'block';
+                    uploadContainer.style.display = 'none';
+                    queryContainer.style.display = 'none';
+                    return;
+                }
+            }
+            
+            // Show loading animation
+            const queryLoading = document.getElementById('query-loading');
+            queryLoading.style.display = 'block';
+            chartButton.disabled = true;
+            
+            fetch('/chart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ filepath, question, api_key: apiKey })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading animation
+                queryLoading.style.display = 'none';
+                chartButton.disabled = false;
+                
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    chartImg.src = data.chart_url + '?t=' + new Date().getTime(); // Add timestamp to avoid caching
+                    chartImg.style.display = 'block';
+                    queryContainer.style.display = 'none';
+                    chartContainer.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                // Hide loading animation
+                queryLoading.style.display = 'none';
+                chartButton.disabled = false;
+                alert('An error occurred while generating the chart.');
+            });
+        });
+
+        newChartButton.addEventListener('click', () => {
+            chartContainer.style.display = 'none';
+            queryContainer.style.display = 'block';
+        });
+
+        newDataButton.addEventListener('click', () => {
+            chartContainer.style.display = 'none';
+            uploadContainer.style.display = 'block';
+        });
+    </script>
+</body>
+</html>

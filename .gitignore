@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Application-generated files
+uploads/
+static/chart.png
