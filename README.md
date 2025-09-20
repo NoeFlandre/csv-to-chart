@@ -5,7 +5,20 @@
 
 A web application that converts CSV data to charts using AI. Upload your CSV file, provide your OpenRouter API key, ask questions about your data, and get visual charts generated automatically.
 
-![CSV-to-Chart Demo](https://placehold.co/600x300?text=Demo+Screenshot+Placeholder)
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="docs/1.png" alt="Step 1: Enter API Key" width="300"></td>
+    <td><img src="docs/2.png" alt="Step 2: Upload Data or Use Sample" width="300"></td>
+    <td><img src="docs/3.png" alt="Step 3: Ask Questions and View Charts" width="300"></td>
+  </tr>
+  <tr>
+    <td align="center">Step 1: Enter API Key</td>
+    <td align="center">Step 2: Upload Data or Use Sample</td>
+    <td align="center">Step 3: Ask Questions and View Charts</td>
+  </tr>
+</table>
 
 ## Features
 
