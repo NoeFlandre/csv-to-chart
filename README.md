@@ -9,9 +9,9 @@ A web application that converts CSV data to charts using AI. Upload your CSV fil
 
 <table>
   <tr>
-    <td><img src="docs/1.png" alt="Step 1: Enter API Key" width="300"></td>
-    <td><img src="docs/2.png" alt="Step 2: Upload Data or Use Sample" width="300"></td>
-    <td><img src="docs/3.png" alt="Step 3: Ask Questions and View Charts" width="300"></td>
+    <td><img src="docs/1.png" alt="Step 1: Upload your data" width="300"></td>
+    <td><img src="docs/2.png" alt="Step 2: Ask questions" width="300"></td>
+    <td><img src="docs/3.png" alt="Step 3: View Charts" width="300"></td>
   </tr>
   <tr>
     <td align="center">Step 1: Enter API Key</td>
