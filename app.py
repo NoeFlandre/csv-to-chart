@@ -7,6 +7,7 @@ from uuid import uuid4
 # Matplotlib's backend must be selected before pyplot is imported.
 # isort: off
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -73,7 +74,9 @@ def _optional_text(payload: dict, field: str) -> str | None:
         raise InvalidChartSpec(f"{field} must be text")
     value = value.strip()
     if not value or len(value) > _MAX_LABEL_LENGTH:
-        raise InvalidChartSpec(f"{field} must contain 1 to {_MAX_LABEL_LENGTH} characters")
+        raise InvalidChartSpec(
+            f"{field} must contain 1 to {_MAX_LABEL_LENGTH} characters"
+        )
     return value
 
 
@@ -111,15 +114,16 @@ def validate_chart_spec(payload: object, frame: pd.DataFrame) -> dict:
 
     aggregation = payload.get("aggregation")
     if aggregation is not None and (
-        not isinstance(aggregation, str)
-        or aggregation not in _ALLOWED_AGGREGATIONS
+        not isinstance(aggregation, str) or aggregation not in _ALLOWED_AGGREGATIONS
     ):
         raise InvalidChartSpec("aggregation is unsupported")
 
     bins = payload.get("bins", 20)
     if chart_type == "histogram":
         if y_column is not None or aggregation is not None:
-            raise InvalidChartSpec("histograms use one numeric column and no aggregation")
+            raise InvalidChartSpec(
+                "histograms use one numeric column and no aggregation"
+            )
         if isinstance(bins, bool) or not isinstance(bins, int) or not 5 <= bins <= 50:
             raise InvalidChartSpec("histogram bins must be an integer from 5 to 50")
         if not pd.api.types.is_numeric_dtype(frame[x_column]):
@@ -147,9 +151,11 @@ def validate_chart_spec(payload: object, frame: pd.DataFrame) -> dict:
             raise InvalidChartSpec("line charts require a numeric y column")
         if aggregation not in {None, *_ALLOWED_AGGREGATIONS}:
             raise InvalidChartSpec("line aggregation is unsupported")
-        if aggregation in {"sum", "mean", "median"} and not pd.api.types.is_numeric_dtype(
-            frame[y_column]
-        ):
+        if aggregation in {
+            "sum",
+            "mean",
+            "median",
+        } and not pd.api.types.is_numeric_dtype(frame[y_column]):
             raise InvalidChartSpec("this aggregation requires a numeric y column")
     elif chart_type == "scatter":
         if y_column is None or aggregation is not None:
@@ -212,9 +218,7 @@ def render_chart(frame: pd.DataFrame, spec: dict, output_path: Path) -> None:
         if chart_type in {"bar", "pie"} or (
             chart_type == "line" and aggregation is not None
         ):
-            values = _aggregate_categories(
-                frame, x_column, y_column, aggregation
-            )
+            values = _aggregate_categories(frame, x_column, y_column, aggregation)
             if len(values) > _MAX_CATEGORIES:
                 raise InvalidChartSpec(
                     f"categorical charts support at most {_MAX_CATEGORIES} x values"
@@ -329,7 +333,9 @@ def generate_chart():
     if not isinstance(question, str) or not question.strip() or len(question) > 1000:
         return jsonify({"error": "Missing or invalid question"}), 400
     if not isinstance(api_key, str) or not api_key.strip():
-        return jsonify({"error": "Missing API key. Please provide your OpenRouter API key."}), 400
+        return jsonify(
+            {"error": "Missing API key. Please provide your OpenRouter API key."}
+        ), 400
 
     try:
         frame = pd.read_csv(csv_path)
@@ -347,11 +353,17 @@ def generate_chart():
         )
         completion = client.chat.completions.create(
             model="deepseek/deepseek-chat-v3.1:free",
-            messages=[{"role": "user", "content": _chart_prompt(frame, question.strip())}],
+            messages=[
+                {"role": "user", "content": _chart_prompt(frame, question.strip())}
+            ],
         )
     except OpenAIError as error:
         if getattr(error, "status_code", None) == 401:
-            return jsonify({"error": "API authentication failed. Please check your OpenRouter API key."}), 401
+            return jsonify(
+                {
+                    "error": "API authentication failed. Please check your OpenRouter API key."
+                }
+            ), 401
         return jsonify({"error": "Chart generation failed. Please try again."}), 502
     except Exception:  # noqa: BLE001 -- provider exceptions can contain request credentials
         return jsonify({"error": "Chart generation failed. Please try again."}), 502
@@ -361,12 +373,28 @@ def generate_chart():
         if not isinstance(content, str):
             raise InvalidChartSpec("model response must be JSON text")
         spec = validate_chart_spec(json.loads(content), frame)
-    except (AttributeError, IndexError, TypeError, json.JSONDecodeError, InvalidChartSpec):
-        return jsonify({"error": "The chart service returned an invalid chart specification."}), 502
+    except (
+        AttributeError,
+        IndexError,
+        TypeError,
+        json.JSONDecodeError,
+        InvalidChartSpec,
+    ):
+        return jsonify(
+            {"error": "The chart service returned an invalid chart specification."}
+        ), 502
 
     try:
         render_chart(frame, spec, _chart_output_path())
-    except (InvalidChartSpec, OSError, ValueError, TypeError, KeyError, RuntimeError, OverflowError):
+    except (
+        InvalidChartSpec,
+        OSError,
+        ValueError,
+        TypeError,
+        KeyError,
+        RuntimeError,
+        OverflowError,
+    ):
         return jsonify({"error": "Chart generation failed. Please try again."}), 502
 
     return jsonify({"chart_url": "/static/chart.png"})
