@@ -7,7 +7,7 @@ import shutil
 
 # Set matplotlib backend to non-interactive before importing pyplot
 import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend
+matplotlib.use('Agg')
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -19,7 +19,7 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    print("Upload route called")  # Debug log
+    print("Upload route called")
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
     file = request.files['file']
@@ -29,7 +29,7 @@ def upload_file():
         filename = file.filename
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
-        print(f"File saved to: {filepath}")  # Debug log
+        print(f"File saved to: {filepath}")
         return jsonify({'filepath': filepath})
     else:
         return jsonify({'error': 'Invalid file type. Please upload a CSV file.'}), 400
@@ -38,17 +38,14 @@ def upload_file():
 def use_sample():
     """Create a copy of the sample CSV file for use"""
     try:
-        # Copy the sample.csv to the uploads folder with a unique name
         sample_path = 'sample.csv'
         if not os.path.exists(sample_path):
             return jsonify({'error': 'Sample file not found'}), 404
             
-        # Create a unique filename
         import time
         filename = f"sample_{int(time.time())}.csv"
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         
-        # Copy the sample file
         shutil.copy2(sample_path, filepath)
         
         return jsonify({'filepath': filepath})
@@ -58,7 +55,7 @@ def use_sample():
 @app.route('/chart', methods=['POST'])
 def generate_chart():
     data = request.get_json()
-    print(f"Received data: {data}")  # Debug log
+    print(f"Received data: {data}")
     
     if not data:
         return jsonify({'error': 'Invalid JSON data'}), 400
@@ -67,9 +64,9 @@ def generate_chart():
     question = data.get('question')
     api_key = data.get('api_key')
 
-    print(f"Filepath: {filepath}")  # Debug log
-    print(f"Question: {question}")  # Debug log
-    print(f"API Key: {api_key}")    # Debug log
+    print(f"Filepath: {filepath}")
+    print(f"Question: {question}")
+    print(f"API Key: {api_key}")
 
     if not filepath or not question:
         return jsonify({'error': 'Missing filepath or question'}), 400
@@ -77,7 +74,6 @@ def generate_chart():
     if not api_key:
         return jsonify({'error': 'Missing API key. Please provide your OpenRouter API key.'}), 400
 
-    # Validate that the file exists and is a CSV
     if not os.path.exists(filepath) or not filepath.endswith('.csv'):
         return jsonify({'error': 'Invalid file path or file type'}), 400
 
@@ -110,7 +106,6 @@ def generate_chart():
         7. Save the chart as 'static/chart.png'
         """
 
-        # Configure the OpenRouter API client with the provided key
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=api_key,
@@ -150,7 +145,7 @@ def generate_chart():
     except Exception as e:
         # Check if it's an API authentication error
         error_msg = str(e)
-        print(f"Exception occurred: {error_msg}")  # Debug log
+        print(f"Exception occurred: {error_msg}")
         if "401" in error_msg or "authentication" in error_msg.lower() or "unauthorized" in error_msg.lower():
             return jsonify({'error': 'API authentication failed. Please check your OpenRouter API key.'}), 401
         return jsonify({'error': f'Error processing request: {str(e)}'}), 500
