@@ -107,6 +107,7 @@
             uploadContainer.style.display = 'block';
         }
 
+        // Event listeners for example questions
         exampleButtons.forEach(button => {
             button.addEventListener('click', () => {
                 questionInput.value = button.getAttribute('data-question');
@@ -126,9 +127,11 @@
         });
 
         useSampleButton.addEventListener('click', () => {
+            // Show loading on the button
             useSampleButton.textContent = 'Preparing sample data...';
             useSampleButton.disabled = true;
             
+            // For demo purposes, we'll simulate using the sample file
             fetch('/use-sample', {
                 method: 'POST',
                 headers: {
@@ -138,6 +141,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                // Reset button
                 useSampleButton.textContent = 'Use Sample Data';
                 useSampleButton.disabled = false;
                 
@@ -150,6 +154,7 @@
                 }
             })
             .catch(error => {
+                // Reset button
                 useSampleButton.textContent = 'Use Sample Data';
                 useSampleButton.disabled = false;
                 alert('An error occurred while preparing sample data.');
@@ -162,6 +167,7 @@
                 return;
             }
             
+            // Show loading on the button
             uploadButton.textContent = 'Uploading...';
             uploadButton.disabled = true;
             
@@ -174,6 +180,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                // Reset button
                 uploadButton.textContent = 'Upload CSV';
                 uploadButton.disabled = false;
                 
@@ -186,6 +193,7 @@
                 }
             })
             .catch(error => {
+                // Reset button
                 uploadButton.textContent = 'Upload CSV';
                 uploadButton.disabled = false;
                 alert('An error occurred while uploading the file.');
@@ -199,6 +207,7 @@
                 return;
             }
             
+            // Make sure we have an API key
             if (!apiKey) {
                 // Check if it's in localStorage
                 const savedKey = localStorage.getItem('openrouter_api_key');
@@ -213,6 +222,7 @@
                 }
             }
             
+            // Show loading animation
             const queryLoading = document.getElementById('query-loading');
             queryLoading.style.display = 'block';
             chartButton.disabled = true;
@@ -226,6 +236,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                // Hide loading animation
                 queryLoading.style.display = 'none';
                 chartButton.disabled = false;
                 
@@ -239,6 +250,7 @@
                 }
             })
             .catch(error => {
+                // Hide loading animation
                 queryLoading.style.display = 'none';
                 chartButton.disabled = false;
                 alert('An error occurred while generating the chart.');
