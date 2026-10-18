@@ -22,11 +22,11 @@ A web application that converts CSV data to charts using AI. Upload your CSV fil
 
 ## Features
 
-- 📊 **AI-Powered Chart Generation**: Transform your CSV data into beautiful visualizations using AI
+- 📊 **AI-Powered Chart Generation**: Use AI to choose a supported visualization for your CSV data
 - 🖱️ **User-Friendly Interface**: Simple step-by-step workflow with clear instructions
 - 💡 **Smart Suggestions**: Example questions to help you get started quickly
 - 📁 **Sample Data Included**: Try it out immediately with our sample dataset
-- 🔐 **Secure API Key Handling**: API keys are stored locally in your browser
+- 🔐 **API Key Handling**: The browser stores the key locally; chart requests send it to the app, which does not write it to server logs
 - 🌐 **Responsive Design**: Works on desktop and mobile devices
 
 ## Prerequisites
@@ -77,7 +77,7 @@ A web application that converts CSV data to charts using AI. Upload your CSV fil
 1. **Enter API Key**: Provide your free OpenRouter API key (get one at [openrouter.ai](https://openrouter.ai/))
 2. **Upload Data**: Upload your CSV file or try with our sample employee data
 3. **Ask Questions**: Use natural language to query your data
-4. **Get Charts**: AI generates beautiful matplotlib charts based on your questions
+4. **Get Charts**: AI returns a chart specification that the app validates and renders with supported chart types
 5. **View Results**: Charts are displayed instantly in your browser
 
 ## Example Questions
@@ -120,11 +120,13 @@ csv-to-chart/
 
 ## Error Handling
 
-The application includes comprehensive error handling for:
+The application rejects unsupported chart specifications and does not execute model-generated Python code.
+
+The application includes error handling for:
 - Missing or invalid API keys
 - Invalid file uploads
 - Empty or malformed CSV files
-- Errors in AI-generated code
+- Invalid chart specifications from the AI service
 - Network issues with the AI service
 
 ## Troubleshooting
